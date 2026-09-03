@@ -58,7 +58,6 @@
 
 <p>
 	Katalog: <strong><?php echo (int) BTS_Catalog::count(); ?></strong> Artikelnummern vorgemerkt ·
-	Verknüpfte Produkte: <strong><?php echo (int) count( BTS_Catalog::linked_artnrs() ); ?></strong> ·
 	Nächster automatischer Lauf:
 	<strong><?php echo $next ? esc_html( date_i18n( 'd.m.Y H:i', $next ) ) : 'nicht geplant'; ?></strong>
 </p>
@@ -147,7 +146,32 @@
 </tr>
 </table>
 
-<h2 class="title">2. Spalten zuordnen</h2>
+<h2 class="title">2. Wie Produkte gefunden werden</h2>
+<p>Der Abgleich läuft über die <strong>SKU</strong>: Bloomtech-Ware trägt die Artikelnummer des Lieferanten
+	als SKU (z.&nbsp;B. <code>16287</code>), euer eigener Lagerbestand die <code>HJ-</code>-Nummern aus dem
+	Auto-SKU-Generator. Es ist <strong>keine manuelle Zuordnung nötig</strong> — passt die Artikelnummer auf eine
+	SKU, wird der Bestand gesetzt, sonst passiert nichts.</p>
+<table class="form-table" role="presentation">
+<tr><th scope="row">Eigenbestand ausschließen</th>
+	<td>SKUs, die so beginnen, nie anfassen:
+		<input type="text" name="exclude_sku_prefix" value="<?php echo esc_attr( $s['exclude_sku_prefix'] ); ?>" class="regular-text" style="width:110px">
+		<p class="description">
+			Doppelter Boden für Ware, die ihr selbst auf Lager habt (Biobizz und andere). Diese Produkte könnten
+			ohnehin nicht getroffen werden, weil <code>HJ-</code>-Nummern in keiner Bloomtech-Liste stehen —
+			der Filter greift aber auch dann noch, wenn sich das einmal überschneiden sollte.
+			Leer lassen schaltet ihn ab.
+		</p>
+	</td></tr>
+<tr><th scope="row">Einzelne Ausnahmen</th>
+	<td><p class="description" style="margin-top:6px">
+		Weicht bei einem Produkt die SKU von der Bloomtech-Nummer ab, lässt sich die Nummer im Produkt unter
+		<em>Produktdaten → Lagerbestand</em> im Feld <strong>Bloomtech-Artikelnummer</strong> hinterlegen.
+		Das ist die Ausnahme, nicht die Regel — normalerweise bleibt das Feld leer.
+		Das Häkchen <strong>Eigenbestand</strong> im selben Bereich schließt ein Produkt dauerhaft aus.
+	</p></td></tr>
+</table>
+
+<h2 class="title">3. Spalten zuordnen</h2>
 <table class="form-table" role="presentation">
 <tr><th scope="row">Erste Zeile ist Kopfzeile</th>
 	<td><label><input type="checkbox" name="has_header" value="1" <?php checked( $s['has_header'], 1 ); ?>> ja</label></td></tr>
@@ -185,7 +209,7 @@
 	</td></tr>
 </table>
 
-<h2 class="title">3. Wie abgeglichen wird</h2>
+<h2 class="title">4. Wie abgeglichen wird</h2>
 <table class="form-table" role="presentation">
 <tr><th scope="row">Automatik</th>
 	<td><label><input type="checkbox" name="enabled" value="1" <?php checked( $s['enabled'], 1 ); ?>>
@@ -240,7 +264,7 @@
 		<p class="description">„Unverändert lassen" ist die sichere Voreinstellung — ein unvollständiger Export legt dann nicht versehentlich Produkte still.</p></td></tr>
 </table>
 
-<h2 class="title">4. Notbremsen</h2>
+<h2 class="title">5. Notbremsen</h2>
 <p>Diese Grenzen verhindern, dass ein kaputter oder halb geschriebener Export den Shop leerräumt. Wird eine überschritten, bricht der Lauf ab, <strong>ohne irgendetwas zu ändern</strong>, und du bekommst eine E-Mail.</p>
 <table class="form-table" role="presentation">
 <tr><th scope="row">Mindestens Zeilen in der Datei</th>

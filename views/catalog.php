@@ -3,35 +3,19 @@
 <h1>Bloomtech-Artikelkatalog</h1>
 <p>
 	Hier stehen <strong>alle</strong> Artikelnummern, die je in einer Bestandsliste aufgetaucht sind — auch die,
-	zu denen es im Shop noch kein Produkt gibt. Wenn du später ein neues Bloomtech-Produkt anlegst,
-	findest du die passende Nummer hier und trägst sie beim Produkt ein.
+	zu denen es im Shop noch kein Produkt gibt. Legst du später ein neues Bloomtech-Produkt an, trägst du die
+	Nummer einfach als SKU ein; ab dem nächsten Abgleich läuft es mit.
 </p>
-<p><strong>Wichtig:</strong> Der Bestandsabgleich fasst ausschließlich Produkte an, bei denen eine Artikelnummer
-	hinterlegt ist. Produkte, die ihr selbst auf Lager habt — etwa Biobizz — lässt du einfach leer;
-	sie bleiben dann für immer unberührt.</p>
-
-<?php if ( ! empty( $_GET['linked'] ) ) : ?>
-	<div class="notice notice-success is-dismissible"><p><?php echo (int) $_GET['linked'] === 2 ? 'Verknüpfung entfernt.' : 'Verknüpft.'; ?></p></div>
-<?php endif; ?>
-<?php if ( ! empty( $_GET['linkerr'] ) ) : ?>
-	<div class="notice notice-error"><p>
-	<?php
-	$e = (int) $_GET['linkerr'];
-	echo esc_html(
-		$e === 3 ? 'Dieses Produkt ist als Eigenbestand markiert und wird deshalb nicht verknüpft.'
-			: ( $e === 2 ? 'Die angegebene ID gehört zu keinem Produkt und zu keiner Variante.' : 'Artikelnummer oder Produkt-ID fehlt.' )
-	);
-	?>
-	</p></div>
-<?php endif; ?>
+<p><strong>Die Zuordnung passiert von selbst über die SKU.</strong> Es gibt hier nichts zu verknüpfen.
+	Produkte aus eigenem Lagerbestand tragen <code>HJ-</code>-Nummern und können deshalb gar nicht getroffen werden.</p>
 
 <form method="get" style="margin:14px 0">
 	<input type="hidden" name="page" value="bts-catalog">
 	<input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="Artikelnummer, EAN, Name oder Marke" class="regular-text">
 	<select name="filter">
 		<option value="all" <?php selected( $filter, 'all' ); ?>>Alle</option>
-		<option value="linked" <?php selected( $filter, 'linked' ); ?>>Nur verknüpfte</option>
-		<option value="unlinked" <?php selected( $filter, 'unlinked' ); ?>>Nur noch nicht verknüpfte</option>
+		<option value="linked" <?php selected( $filter, 'linked' ); ?>>Nur mit Produkt im Shop</option>
+		<option value="unlinked" <?php selected( $filter, 'unlinked' ); ?>>Nur ohne Produkt im Shop</option>
 	</select>
 	<button class="button">Filtern</button>
 	<span style="margin-left:12px"><?php echo (int) $data['total']; ?> Treffer</span>
@@ -45,7 +29,7 @@
 	<th style="width:120px">Marke</th>
 	<th style="width:80px">Bestand</th>
 	<th style="width:120px">Zuletzt gesehen</th>
-	<th style="width:280px">Produkt im Shop</th>
+	<th style="width:300px">Produkt im Shop (über SKU)</th>
 </tr></thead>
 <tbody>
 <?php if ( ! $data['rows'] ) : ?>
@@ -64,26 +48,16 @@
 		<td>
 			<?php if ( $links ) : ?>
 				<?php foreach ( $links as $pid ) : ?>
-					<div style="margin-bottom:4px">
+					<div style="margin-bottom:3px">
 						<a href="<?php echo esc_url( get_edit_post_link( $pid ) ); ?>">
 							<?php echo esc_html( get_the_title( $pid ) ?: ( '#' . $pid ) ); ?></a>
-						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline">
-							<?php wp_nonce_field( 'bts_link' ); ?>
-							<input type="hidden" name="action" value="bts_link">
-							<input type="hidden" name="unlink" value="1">
-							<input type="hidden" name="product_id" value="<?php echo (int) $pid; ?>">
-							<button class="button-link" style="color:#b32d2e">lösen</button>
-						</form>
+						<?php if ( BTS_Matcher::is_excluded( $pid ) ) : ?>
+							<span style="color:#996800">· Eigenbestand, wird übersprungen</span>
+						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>
 			<?php else : ?>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<?php wp_nonce_field( 'bts_link' ); ?>
-					<input type="hidden" name="action" value="bts_link">
-					<input type="hidden" name="artnr" value="<?php echo esc_attr( $r->artnr ); ?>">
-					<input type="number" name="product_id" placeholder="Produkt-ID" style="width:110px">
-					<button class="button button-small">verknüpfen</button>
-				</form>
+				<span style="color:#aaa">noch kein Produkt mit dieser SKU</span>
 			<?php endif; ?>
 		</td>
 	</tr>

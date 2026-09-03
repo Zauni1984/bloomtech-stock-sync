@@ -10,7 +10,6 @@ class BTS_Admin {
 		add_action( 'admin_post_bts_save', array( __CLASS__, 'handle_save' ) );
 		add_action( 'admin_post_bts_test', array( __CLASS__, 'handle_test' ) );
 		add_action( 'admin_post_bts_run', array( __CLASS__, 'handle_run' ) );
-		add_action( 'admin_post_bts_link', array( __CLASS__, 'handle_link' ) );
 	}
 
 	public static function menu() {
@@ -44,7 +43,7 @@ class BTS_Admin {
 				$out[ $k ] = sanitize_text_field( $in[ $k ] );
 			}
 		}
-		foreach ( array( 'remote_path', 'file_name', 'file_pattern', 'webdav_base', 'webdav_user', 'col_artnr', 'col_ean', 'col_stock', 'col_name', 'col_brand', 'col_price' ) as $k ) {
+		foreach ( array( 'remote_path', 'file_name', 'file_pattern', 'webdav_base', 'webdav_user', 'exclude_sku_prefix', 'col_artnr', 'col_ean', 'col_stock', 'col_name', 'col_brand', 'col_price' ) as $k ) {
 			if ( isset( $in[ $k ] ) ) {
 				$out[ $k ] = sanitize_text_field( $in[ $k ] );
 			}
@@ -122,33 +121,6 @@ class BTS_Admin {
 		self::back( 'bts-log', array( 'ran' => 1 ) );
 	}
 
-	/* ============================================================ Verknüpfen */
-
-	public static function handle_link() {
-		self::guard();
-		check_admin_referer( 'bts_link' );
-		$artnr = sanitize_text_field( wp_unslash( $_POST['artnr'] ?? '' ) );
-		$pid   = (int) ( $_POST['product_id'] ?? 0 );
-		$unset = ! empty( $_POST['unlink'] );
-
-		if ( $unset && $pid ) {
-			delete_post_meta( $pid, BTS_META_ARTNR );
-			self::back( 'bts-catalog', array( 'linked' => 2 ) );
-		}
-		if ( $artnr === '' || $pid <= 0 ) {
-			self::back( 'bts-catalog', array( 'linkerr' => 1 ) );
-		}
-		$post = get_post( $pid );
-		if ( ! $post || ! in_array( $post->post_type, array( 'product', 'product_variation' ), true ) ) {
-			self::back( 'bts-catalog', array( 'linkerr' => 2 ) );
-		}
-		if ( get_post_meta( $pid, '_bloomtech_exclude', true ) === 'yes' ) {
-			self::back( 'bts-catalog', array( 'linkerr' => 3 ) );
-		}
-		update_post_meta( $pid, BTS_META_ARTNR, $artnr );
-		self::back( 'bts-catalog', array( 'linked' => 1 ) );
-	}
-
 	/* ============================================================ Seiten */
 
 	public static function page_settings() {
@@ -166,6 +138,7 @@ class BTS_Admin {
 		$filter = isset( $_GET['filter'] ) ? sanitize_text_field( wp_unslash( $_GET['filter'] ) ) : 'all';
 		$paged  = max( 1, (int) ( $_GET['paged'] ?? 1 ) );
 		$per    = 50;
+		BTS_Matcher::flush();
 		$data   = BTS_Catalog::query( $search, $filter, $per, ( $paged - 1 ) * $per );
 		require BTS_PATH . 'views/catalog.php';
 	}

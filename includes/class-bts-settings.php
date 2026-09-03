@@ -37,6 +37,7 @@ class BTS_Settings {
 
 			// Sync behaviour.
 			'enabled'          => 0,
+			'exclude_sku_prefix' => 'HJ-',
 			'interval'         => 'bts_6h',
 			'buffer'           => 0,          // Sicherheitspuffer: so viel wird vom Lieferantenbestand abgezogen.
 			'threshold'        => 0,          // Bestand <= Schwelle  =>  ausverkauft.

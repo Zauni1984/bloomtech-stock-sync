@@ -16,9 +16,10 @@ gleicht sie über die Artikelnummer mit den WooCommerce-Produkten ab.
 
 Zwei Grundregeln gelten immer:
 
-1. Angefasst werden ausschließlich Produkte, bei denen eine Bloomtech-
-   Artikelnummer hinterlegt ist. Produkte aus eigenem Lagerbestand bleiben
-   unberührt, solange das Feld leer ist.
+1. Zugeordnet wird über die SKU. Bloomtech-Ware trägt die Artikelnummer des
+   Lieferanten als SKU (z. B. "16287"), eigener Lagerbestand die "HJ-"-Nummern
+   aus dem Auto-SKU-Generator — und "HJ-" steht in keiner Bloomtech-Liste.
+   Eigenbestand wie Biobizz kann deshalb gar nicht getroffen werden.
 2. Geschrieben werden ausschließlich Bestandsmenge und Bestandsstatus.
    Preise, Texte, Status, Permalinks, Kategorien und Eigenschaften werden nie
    verändert.
@@ -59,23 +60,40 @@ Pflicht sind *Artikelnummer* und *Bestand*. Anschließend *Trockenlauf* —
 der zeigt im Protokoll genau, was ein echter Lauf ändern würde, ohne etwas zu
 speichern. Erst wenn das Ergebnis stimmt, die Automatik einschalten.
 
-== Produkte verknüpfen ==
+== Zuordnung ==
 
-Im Produkt unter *Produktdaten → Lagerbestand* steht das Feld
-**Bloomtech-Artikelnummer**. Bei variablen Produkten gibt es das Feld zusätzlich
-je Variante, weil Bloomtech Gebindegrößen als eigene Artikelnummern führt.
+Es ist **keine Handarbeit nötig**. Passt eine Artikelnummer aus der Liste auf
+eine SKU im Shop, wird der Bestand gesetzt; passt sie auf nichts, passiert
+nichts. Ein neues Bloomtech-Produkt läuft ab dem nächsten Abgleich mit, sobald
+die Artikelnummer als SKU eingetragen ist.
 
-Ein Häkchen **Eigenbestand** schließt ein Produkt dauerhaft aus, selbst wenn
-eine Artikelnummer eingetragen ist.
+Als doppelter Boden lässt sich in den Einstellungen ein SKU-Präfix angeben, das
+nie angefasst wird (Voreinstellung "HJ-").
 
-In der Produktübersicht zeigt die Spalte *Bloomtech* auf einen Blick, was
-verknüpft ist und was nicht.
+Zwei Sonderfälle deckt das Produkt selbst ab, unter *Produktdaten →
+Lagerbestand*:
+
+* **Bloomtech-Artikelnummer** — nur ausfüllen, wenn die Nummer bei diesem einen
+  Produkt von der SKU abweicht. Normalfall: leer.
+* **Eigenbestand** — schließt ein Produkt dauerhaft aus, selbst wenn die SKU
+  passt.
+
+Bei variablen Produkten zählt die SKU der jeweiligen Variante, weil Bloomtech
+Gebindegrößen als eigene Artikelnummern führt.
+
+In der Produktübersicht zeigt die Spalte *Bloomtech* auf einen Blick, welche
+Produkte über die Liste gesteuert werden.
 
 == Artikelkatalog ==
 
 Jede Artikelnummer, die je in einem Export stand, wird dauerhaft gespeichert –
 auch dann, wenn es im Shop noch kein passendes Produkt gibt. Beim Anlegen neuer
-Bloomtech-Produkte lässt sich die Nummer dort nachschlagen und direkt verknüpfen.
+Bloomtech-Produkte lässt sich die Nummer dort nachschlagen und als SKU eintragen.
+
+Der Katalog erfüllt zusätzlich einen technischen Zweck: Nur SKUs, die mindestens
+einmal in einer Bloomtech-Liste standen, gelten als Bloomtech-Ware. Dadurch
+erkennt das Plugin einen Artikel, der aus dem aktuellen Export herausgefallen
+ist, ohne Produkte anderer Lieferanten anzufassen.
 
 == Bestandsmenge oder nur Status ==
 

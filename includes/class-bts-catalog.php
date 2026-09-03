@@ -99,16 +99,12 @@ class BTS_Catalog {
 		);
 	}
 
-	/** artnr => array of post IDs (products and variations). */
+	/** artnr => array of post IDs, resolved by SKU (see BTS_Matcher). */
 	public static function linked_artnrs() {
-		global $wpdb;
-		$rows = $wpdb->get_results(
-			$wpdb->prepare( "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value <> ''", BTS_META_ARTNR )
-		);
-		$map = array();
-		foreach ( $rows as $r ) {
-			$map[ (string) $r->meta_value ][] = (int) $r->post_id;
+		$out = array();
+		foreach ( BTS_Matcher::map() as $key => $hits ) {
+			$out[ $key ] = wp_list_pluck( $hits, 'pid' );
 		}
-		return $map;
+		return $out;
 	}
 }

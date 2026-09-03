@@ -32,6 +32,8 @@ if ( $show ) :
 	<table class="widefat" style="max-width:760px;margin-bottom:20px"><tbody>
 		<tr><td>Datei</td><td><code><?php echo esc_html( $show['file'] ?? '' ); ?></code></td></tr>
 		<tr><td>Zeilen / Artikel</td><td><?php echo (int) ( $show['rows'] ?? 0 ); ?> / <?php echo (int) ( $show['articles'] ?? 0 ); ?></td></tr>
+		<tr><td>Davon im Shop gefunden</td><td><strong><?php echo (int) ( $show['matched'] ?? 0 ); ?></strong>
+			<span style="color:#666">(Abgleich über die SKU)</span></td></tr>
 		<tr><td>Neu in den Katalog</td><td><?php echo (int) ( $show['new_art'] ?? 0 ); ?></td></tr>
 		<tr><td>Produkte geändert</td><td><strong><?php echo (int) ( $show['updated'] ?? 0 ); ?></strong></td></tr>
 		<tr><td>Unverändert</td><td><?php echo (int) ( $show['unchanged'] ?? 0 ); ?></td></tr>

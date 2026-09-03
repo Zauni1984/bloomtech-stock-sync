@@ -26,6 +26,7 @@ class BTS_Sync {
 			'file'     => '',
 			'rows'     => 0,
 			'articles' => 0,
+			'matched'  => 0,
 			'new_art'  => 0,
 			'updated'  => 0,
 			'unchanged'=> 0,
@@ -125,29 +126,51 @@ class BTS_Sync {
 				BTS_Logger::info( sprintf( '%d neue Artikelnummern in den Katalog aufgenommen.', $cat['new'] ) );
 			}
 		} else {
-			$known = BTS_Catalog::linked_artnrs();
 			foreach ( $articles as $a ) {
 				if ( ! BTS_Catalog::get( $a['artnr'] ) ) {
 					++$report['new_art'];
 				}
 			}
-			unset( $known );
 		}
 
-		/* ---------------------------------------------------- 6. Verknüpfte Produkte bestimmen */
-		$linked = BTS_Catalog::linked_artnrs();
-		if ( ! $linked ) {
-			BTS_Logger::warn( 'Es ist noch kein Produkt mit einer Bloomtech-Artikelnummer verknüpft — es gibt nichts abzugleichen.' );
-			$report['errors'][] = 'Noch kein Produkt verknüpft. Der Katalog wurde eingelesen, es wurde aber kein Bestand geändert.';
+		/* ---------------------------------------------------- 6. Produkte über die SKU finden */
+		BTS_Matcher::flush();
+		$linked = BTS_Catalog::linked_artnrs();          // SKU (normalisiert) => Beitrags-IDs
+		$known  = BTS_Matcher::catalogue_keys();         // je gesehene Artikelnummern
+
+		$by_key = array();                               // Artikel von heute, normalisiert
+		foreach ( $articles as $a ) {
+			$by_key[ BTS_Matcher::key( $a['artnr'] ) ] = $a;
+		}
+
+		$report['matched'] = BTS_Matcher::matched_count( array_keys( $articles ) );
+		BTS_Logger::info(
+			sprintf(
+				'%d von %d Artikelnummern haben ein Produkt im Shop (Abgleich über die SKU).',
+				$report['matched'],
+				count( $articles )
+			)
+		);
+		if ( $report['matched'] === 0 ) {
+			$msg = 'Keine einzige Artikelnummer passt zu einer SKU im Shop. Der Katalog wurde eingelesen, es wurde aber kein Bestand geändert. Prüfe, ob die richtige Spalte als Artikelnummer zugeordnet ist.';
+			BTS_Logger::warn( $msg );
+			$report['errors'][] = $msg;
 			return self::finish( $report );
 		}
 
 		/* ---------------------------------------------------- 7. Planen (erst rechnen, dann schreiben) */
 		$plan = array();
-		foreach ( $linked as $artnr => $post_ids ) {
-			$has = isset( $articles[ $artnr ] );
+		foreach ( $linked as $key => $post_ids ) {
+			$has = isset( $by_key[ $key ] );
+
+			// Nur Ware, die schon einmal in einer Bloomtech-Liste stand, gilt als
+			// Bloomtech-Ware. Produkte anderer Lieferanten bleiben unangetastet.
+			if ( ! $has && ! isset( $known[ $key ] ) ) {
+				continue;
+			}
+
 			foreach ( $post_ids as $pid ) {
-				if ( get_post_meta( $pid, '_bloomtech_exclude', true ) === 'yes' ) {
+				if ( BTS_Matcher::is_excluded( $pid ) ) {
 					++$report['skipped'];
 					continue;
 				}
@@ -161,21 +184,25 @@ class BTS_Sync {
 						continue;
 					}
 					$target = 0;
-				} elseif ( $articles[ $artnr ]['word'] ) {
-					// Nur ein Wort gemeldet: null heißt "vorrätig, Menge unbekannt".
-					// Puffer und Schwelle greifen hier nicht, weil es nichts zu rechnen gibt.
-					$target = $articles[ $artnr ]['stock'] > 0 ? null : 0;
+					$artnr  = $key;
 				} else {
-					$raw = $articles[ $artnr ]['stock'];
-					if ( $raw === null ) {
-						++$report['skipped'];
-						continue; // keine verwertbare Bestandsangabe -> nichts anfassen
+					$artnr = $by_key[ $key ]['artnr'];
+					if ( $by_key[ $key ]['word'] ) {
+						// Nur ein Wort gemeldet: null heißt "vorrätig, Menge unbekannt".
+						// Puffer und Schwelle greifen hier nicht, weil es nichts zu rechnen gibt.
+						$target = $by_key[ $key ]['stock'] > 0 ? null : 0;
+					} else {
+						$raw = $by_key[ $key ]['stock'];
+						if ( $raw === null ) {
+							++$report['skipped'];
+							continue; // keine verwertbare Bestandsangabe -> nichts anfassen
+						}
+						$raw = max( 0, (float) $raw - (float) $s['buffer'] );
+						if ( $raw <= (float) $s['threshold'] ) {
+							$raw = 0;
+						}
+						$target = (int) round( $raw );
 					}
-					$raw = max( 0, (float) $raw - (float) $s['buffer'] );
-					if ( $raw <= (float) $s['threshold'] ) {
-						$raw = 0;
-					}
-					$target = (int) round( $raw );
 				}
 				$plan[] = array(
 					'pid'     => $pid,

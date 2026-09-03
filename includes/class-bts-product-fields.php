@@ -4,9 +4,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The article-number field on products and variations.
  *
- * Nothing is ever filled in automatically. A product only joins the sync once
- * somebody types an article number here — which is exactly what keeps
- * shop-owned stock (Biobizz and the like) out of it.
+ * This is the exception, not the rule: products are normally matched by their
+ * SKU. The field only exists for the odd product whose shop SKU differs from
+ * the Bloomtech article number. The "Eigenbestand" checkbox is the hard opt-out
+ * that wins over any match.
  */
 class BTS_Product_Fields {
 
@@ -28,7 +29,7 @@ class BTS_Product_Fields {
 				'id'          => BTS_META_ARTNR,
 				'label'       => 'Bloomtech-Artikelnummer',
 				'desc_tip'    => true,
-				'description' => 'Nur ausfüllen, wenn dieses Produkt über Bloomtech bezogen wird. Solange das Feld leer ist, rührt der Bestandsabgleich das Produkt nicht an.',
+				'description' => 'Nur ausfüllen, wenn die Bloomtech-Nummer von der SKU abweicht. Im Normalfall leer lassen — der Abgleich läuft über die SKU.',
 				'value'       => get_post_meta( $post->ID, BTS_META_ARTNR, true ),
 			)
 		);
@@ -36,7 +37,7 @@ class BTS_Product_Fields {
 			array(
 				'id'          => '_bloomtech_exclude',
 				'label'       => 'Eigenbestand',
-				'description' => 'Nie über Bloomtech synchronisieren (auch nicht, wenn eine Artikelnummer eingetragen ist).',
+				'description' => 'Nie über Bloomtech synchronisieren, auch wenn die SKU passt. Für Ware, die ihr selbst auf Lager habt.',
 				'value'       => get_post_meta( $post->ID, '_bloomtech_exclude', true ) === 'yes' ? 'yes' : 'no',
 			)
 		);
@@ -61,7 +62,7 @@ class BTS_Product_Fields {
 				'value'         => get_post_meta( $variation->ID, BTS_META_ARTNR, true ),
 				'wrapper_class' => 'form-row form-row-full',
 				'desc_tip'      => true,
-				'description'   => 'Leer lassen, wenn diese Variante nicht über Bloomtech läuft.',
+				'description'   => 'Nur ausfüllen, wenn die Bloomtech-Nummer von der SKU der Variante abweicht.',
 			)
 		);
 	}
@@ -89,19 +90,14 @@ class BTS_Product_Fields {
 		}
 		$a = get_post_meta( $post_id, BTS_META_ARTNR, true );
 		if ( $a ) {
-			echo '<code>' . esc_html( $a ) . '</code>';
+			echo '<code>' . esc_html( $a ) . '</code> <span style="color:#666">(Ausnahme)</span>';
 			return;
 		}
-		$kids = get_posts(
-			array(
-				'post_type'   => 'product_variation',
-				'post_parent' => $post_id,
-				'numberposts' => 1,
-				'fields'      => 'ids',
-				'meta_key'    => BTS_META_ARTNR,
-				'meta_compare'=> 'EXISTS',
-			)
-		);
-		echo $kids ? '<span title="Auf Variantenebene verknüpft">Varianten</span>' : '<span style="color:#aaa">—</span>';
+		$sku = get_post_meta( $post_id, '_sku', true );
+		if ( $sku && BTS_Catalog::get( $sku ) ) {
+			echo '<code>' . esc_html( $sku ) . '</code>';
+			return;
+		}
+		echo '<span style="color:#aaa">—</span>';
 	}
 }
