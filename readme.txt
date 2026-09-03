@@ -77,6 +77,31 @@ Jede Artikelnummer, die je in einem Export stand, wird dauerhaft gespeichert –
 auch dann, wenn es im Shop noch kein passendes Produkt gibt. Beim Anlegen neuer
 Bloomtech-Produkte lässt sich die Nummer dort nachschlagen und direkt verknüpfen.
 
+== Bestandsmenge oder nur Status ==
+
+Für Produkte, die bisher ohne Lagerbestand nur als „vorrätig" / „Lieferrückstand" /
+„nicht vorrätig" geführt werden, muss **nichts vorbereitet werden**. Das Plugin
+beherrscht beide Betriebsarten:
+
+*Mit „Bestand mitschreiben"* schaltet es die Lagerverwaltung beim ersten Lauf
+selbst ein und trägt die Stückzahl ein. WooCommerce begrenzt dann die bestellbare
+Menge und zählt bei jeder Bestellung herunter. Das ist der eigentliche Schutz
+gegen Überverkauf, weil er auch zwischen zwei Abgleichen wirkt.
+
+*Ohne den Haken* wird nur der Status umgeschaltet — genau so, wie die Produkte
+heute laufen. Der Nachteil: Solange der Lieferant „vorrätig" meldet, ist die
+Bestellmenge im Shop unbegrenzt.
+
+Meldet die Liste statt Zahlen nur Worte („lieferbar", „ausverkauft"), wird auch
+mit Haken keine Stückzahl erfunden; dann greift automatisch die reine
+Statusumschaltung.
+
+Ein Hinweis zu variablen Produkten: WooCommerce berechnet deren Status beim
+Speichern aus den Varianten neu. Reine Statusumschaltung auf dem Elternprodukt
+hält dort womöglich nicht. Solche Produkte deshalb auf Variantenebene verknüpfen
+oder „Bestand mitschreiben" einschalten. Das Plugin warnt im Protokoll, wenn es
+darauf stößt.
+
 == Notbremsen ==
 
 Ein fehlerhafter oder halb geschriebener Export darf den Shop nicht leerräumen.

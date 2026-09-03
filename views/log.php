@@ -50,7 +50,16 @@ if ( $show ) :
 				<td><code><?php echo esc_html( $c['artnr'] ); ?></code></td>
 				<td><a href="<?php echo esc_url( get_edit_post_link( $c['pid'] ) ); ?>"><?php echo esc_html( $c['name'] ); ?></a></td>
 				<td><?php echo esc_html( $c['sku'] ); ?></td>
-				<td><?php echo $c['from'] === null ? '—' : (int) $c['from']; ?> → <strong><?php echo (int) $c['to']; ?></strong></td>
+				<td>
+					<?php
+					if ( empty( $c['qty'] ) ) {
+						echo '<span style="color:#666">nur Status</span>';
+					} else {
+						echo $c['from'] === null ? '—' : (int) $c['from'];
+						echo ' → <strong>' . (int) $c['to'] . '</strong>';
+					}
+					?>
+				</td>
 				<td><?php echo esc_html( $c['status'] ); ?></td>
 				<td><?php echo esc_html( $c['reason'] ); ?></td>
 			</tr>

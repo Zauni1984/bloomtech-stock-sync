@@ -214,8 +214,18 @@
 	<td>Bestand ≤ <input type="number" name="threshold" step="1" min="0" value="<?php echo esc_attr( $s['threshold'] ); ?>" class="small-text"></td></tr>
 <tr><th scope="row">Bestand mitschreiben</th>
 	<td><label><input type="checkbox" name="write_stock_qty" value="1" <?php checked( $s['write_stock_qty'], 1 ); ?>>
-		Bestandsmenge in WooCommerce eintragen (Lagerverwaltung wird dafür aktiviert)</label>
-		<p class="description">Ohne Haken wird nur zwischen „auf Lager" und „ausverkauft" umgeschaltet.</p></td></tr>
+		Bestandsmenge in WooCommerce eintragen</label>
+		<p class="description">
+			<strong>Mit Haken:</strong> Das Plugin schaltet die Lagerverwaltung beim ersten Lauf selbst ein
+			und trägt die Stückzahl ein. Du musst vorher nichts vorbereiten. WooCommerce begrenzt dann die
+			bestellbare Menge und zählt bei jeder Bestellung herunter — <em>das ist der wirksame Schutz gegen
+			Überverkauf</em>, auch zwischen zwei Abgleichen.<br>
+			<strong>Ohne Haken:</strong> Es wird nur zwischen „vorrätig", „Lieferrückstand" und „nicht vorrätig"
+			umgeschaltet, so wie die Produkte heute laufen. Solange der Lieferant „vorrätig" meldet, ist die
+			Bestellmenge im Shop unbegrenzt — ein Kunde kann also 10 Stück kaufen, obwohl nur noch 2 da sind.<br>
+			Meldet die Liste statt Zahlen nur Worte wie „lieferbar", wird auch mit Haken <em>keine</em> Menge
+			erfunden — dann greift automatisch die reine Statusumschaltung.
+		</p></td></tr>
 <tr><th scope="row">Bei Bestand 0</th>
 	<td><select name="backorder_mode">
 			<option value="no" <?php selected( $s['backorder_mode'], 'no' ); ?>>Nicht bestellbar (ausverkauft)</option>

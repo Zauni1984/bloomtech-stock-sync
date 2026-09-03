@@ -44,14 +44,16 @@ class BTS_Notifier {
 		if ( $report['changes'] ) {
 			$l[] = 'Änderungen:';
 			foreach ( array_slice( $report['changes'], 0, 100 ) as $c ) {
-				$l[] = sprintf(
-					'  · %s (%s) %s → %s  [%s]',
-					$c['name'],
-					$c['artnr'],
-					$c['from'] === null ? '—' : $c['from'],
-					$c['to'],
-					$c['reason']
-				);
+				$l[] = empty( $c['qty'] )
+					? sprintf( '  · %s (%s) nur Status: %s  [%s]', $c['name'], $c['artnr'], $c['status'], $c['reason'] )
+					: sprintf(
+						'  · %s (%s) %s → %s  [%s]',
+						$c['name'],
+						$c['artnr'],
+						$c['from'] === null ? '—' : $c['from'],
+						$c['to'],
+						$c['reason']
+					);
 			}
 			if ( count( $report['changes'] ) > 100 ) {
 				$l[] = sprintf( '  … und %d weitere', count( $report['changes'] ) - 100 );

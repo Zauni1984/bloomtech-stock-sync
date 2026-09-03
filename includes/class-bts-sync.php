@@ -91,8 +91,12 @@ class BTS_Sync {
 			$stock_raw = $idx['stock'] !== null ? self::cell( $row, $idx['stock'] ) : '';
 			$avail     = BTS_CSV::to_availability( $stock_raw );
 			$stock     = BTS_CSV::to_number( $stock_raw, $s['decimal'] );
+			$from_word = false;
 			if ( $stock === null && $avail !== null ) {
-				$stock = $avail ? 999 : 0;   // Textzustand in eine Zahl übersetzen
+				// Der Lieferant meldet nur "lieferbar"/"ausverkauft". Daraus lässt sich
+				// keine Stückzahl ableiten — es wird deshalb auch keine erfunden.
+				$stock     = $avail ? 1 : 0;
+				$from_word = true;
 			}
 			$articles[ $artnr ] = array(
 				'artnr' => $artnr,
@@ -100,6 +104,7 @@ class BTS_Sync {
 				'name'  => $idx['name'] !== null ? self::cell( $row, $idx['name'] ) : '',
 				'brand' => $idx['brand'] !== null ? self::cell( $row, $idx['brand'] ) : '',
 				'stock' => $stock,
+				'word'  => $from_word,
 				'price' => $idx['price'] !== null ? BTS_CSV::to_number( self::cell( $row, $idx['price'] ), $s['decimal'] ) : null,
 				'raw'   => array_combine(
 					array_slice( $csv['header'], 0, count( $row ) ),
@@ -156,25 +161,30 @@ class BTS_Sync {
 						continue;
 					}
 					$target = 0;
+				} elseif ( $articles[ $artnr ]['word'] ) {
+					// Nur ein Wort gemeldet: null heißt "vorrätig, Menge unbekannt".
+					// Puffer und Schwelle greifen hier nicht, weil es nichts zu rechnen gibt.
+					$target = $articles[ $artnr ]['stock'] > 0 ? null : 0;
 				} else {
-					$target = $articles[ $artnr ]['stock'];
-					if ( $target === null ) {
+					$raw = $articles[ $artnr ]['stock'];
+					if ( $raw === null ) {
 						++$report['skipped'];
 						continue; // keine verwertbare Bestandsangabe -> nichts anfassen
 					}
-					$target = max( 0, (float) $target - (float) $s['buffer'] );
-					if ( $target <= (float) $s['threshold'] ) {
-						$target = 0;
+					$raw = max( 0, (float) $raw - (float) $s['buffer'] );
+					if ( $raw <= (float) $s['threshold'] ) {
+						$raw = 0;
 					}
+					$target = (int) round( $raw );
 				}
 				$plan[] = array(
 					'pid'     => $pid,
 					'artnr'   => $artnr,
 					'product' => $product,
-					'target'  => (int) round( $target ),
+					'target'  => $target,
 					'missing' => ! $has,
 				);
-				if ( (int) round( $target ) === 0 ) {
+				if ( $target === 0 ) {
 					++$report['to_zero'];
 				}
 			}
@@ -197,17 +207,27 @@ class BTS_Sync {
 		}
 
 		/* ---------------------------------------------------- 9. Schreiben */
+		$with_qty      = (bool) (int) $s['write_stock_qty'];
+		$variable_warn = array();
+
 		foreach ( $plan as $p ) {
 			$product = $p['product'];
-			$before  = $product->get_manage_stock() ? (int) $product->get_stock_quantity() : null;
+			$manages = $product->get_manage_stock();
+			$before  = $manages ? (int) $product->get_stock_quantity() : null;
 			$b_stat  = $product->get_stock_status();
-			$target  = $p['target'];
-			$status  = $target > 0 ? 'instock' : self::zero_status( $s['backorder_mode'] );
+			$target  = $p['target'];                       // null = vorrätig, Menge unbekannt
 
-			$changed = ( $before !== $target ) || ( $b_stat !== $status ) || ! $product->get_manage_stock();
-			if ( ! $changed ) {
+			$d         = self::decide( $manages, $before, $b_stat, $target, $with_qty, $s['backorder_mode'] );
+			$status    = $d['status'];
+			$write_qty = $d['write_qty'];
+
+			if ( ! $d['changed'] ) {
 				++$report['unchanged'];
 				continue;
+			}
+
+			if ( ! $with_qty && $product->is_type( 'variable' ) ) {
+				$variable_warn[] = $product->get_name();
 			}
 
 			$report['changes'][] = array(
@@ -217,6 +237,7 @@ class BTS_Sync {
 				'sku'    => $product->get_sku(),
 				'from'   => $before,
 				'to'     => $target,
+				'qty'    => $write_qty,
 				'status' => $b_stat . ' → ' . $status,
 				'reason' => $p['missing'] ? 'nicht mehr in der Liste' : 'Bestandsmeldung',
 			);
@@ -227,7 +248,7 @@ class BTS_Sync {
 			}
 
 			try {
-				if ( (int) $s['write_stock_qty'] ) {
+				if ( $write_qty ) {
 					$product->set_manage_stock( true );
 					$product->set_stock_quantity( $target );
 					$product->set_backorders( $target > 0 ? $product->get_backorders() : self::backorders( $s['backorder_mode'] ) );
@@ -240,11 +261,52 @@ class BTS_Sync {
 			}
 		}
 
+		if ( $variable_warn ) {
+			$names = array_slice( array_unique( $variable_warn ), 0, 5 );
+			$msg   = sprintf(
+				'%d variable Produkte (%s%s) wurden nur im Status geändert. WooCommerce berechnet den Status variabler Produkte beim Speichern aus den Varianten neu — die Änderung hält dort womöglich nicht. Verknüpfe solche Produkte auf Variantenebene oder schalte „Bestand mitschreiben" ein.',
+				count( array_unique( $variable_warn ) ),
+				implode( ', ', $names ),
+				count( array_unique( $variable_warn ) ) > 5 ? ' …' : ''
+			);
+			$report['errors'][] = $msg;
+			BTS_Logger::warn( $msg );
+		}
+
 		if ( ! $dry_run && $report['updated'] > 0 ) {
 			wc_delete_product_transients();
 		}
 
 		return self::finish( $report );
+	}
+
+	/**
+	 * Decides what a single product needs — kept free of WooCommerce so it can be
+	 * reasoned about and tested on its own.
+	 *
+	 * @param bool     $manages   Product currently manages stock.
+	 * @param int|null $before    Current quantity, null when stock is not managed.
+	 * @param string   $b_stat    Current stock status.
+	 * @param int|null $target    Wanted quantity; null means "in stock, quantity unknown".
+	 * @param bool     $with_qty  Whether the shop wants quantities written at all.
+	 * @param string   $bo_mode   What "zero" should look like.
+	 * @return array{changed:bool,status:string,write_qty:bool}
+	 */
+	public static function decide( $manages, $before, $b_stat, $target, $with_qty, $bo_mode ) {
+		$status    = ( $target === null || $target > 0 ) ? 'instock' : self::zero_status( $bo_mode );
+		$write_qty = $with_qty && $target !== null;
+
+		// Ohne Mengenschreibung zählt allein der Status. Sonst würde jeder Lauf
+		// jedes Produkt als geändert melden, nur weil es keine Lagerverwaltung hat.
+		$changed = $write_qty
+			? ( ! $manages || $before !== $target || $b_stat !== $status )
+			: ( $b_stat !== $status );
+
+		return array(
+			'changed'   => $changed,
+			'status'    => $status,
+			'write_qty' => $write_qty,
+		);
 	}
 
 	private static function zero_status( $mode ) {
