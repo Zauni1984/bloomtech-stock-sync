@@ -3,7 +3,7 @@ Contributors: hanfjack
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Hält den Warenbestand von Bloomtech-Produkten aktuell und führt einen Katalog
@@ -149,6 +149,9 @@ gespeichert, liegt das Passwort mit AES-256 verschlüsselt in den Optionen und
 wird nie im Klartext angezeigt.
 
 == Changelog ==
+
+= 1.1.0 =
+* Abgleich ausschließlich über das SKU-Feld. MPN, EAN/GTIN und sonstige Felder werden nie zur Zuordnung verwendet.
 
 = 1.0.0 =
 * Erste Fassung.

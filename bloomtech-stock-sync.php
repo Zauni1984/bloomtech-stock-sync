@@ -3,7 +3,7 @@
  * Plugin Name: Bloomtech Stock Sync
  * Plugin URI:  https://hanfjack.de/
  * Description: Hält den Warenbestand von Bloomtech-Produkten aktuell, indem die Bestandsliste mehrmals täglich direkt aus der Nextcloud abgerufen und per Artikelnummer mit den WooCommerce-Produkten abgeglichen wird. Führt zusätzlich einen vollständigen Katalog aller Bloomtech-Artikelnummern für künftige Produktanlagen.
- * Version:     1.0.0
+ * Version:     1.1.0
  * Author:      hanfjack.de
  * Text Domain: bloomtech-stock-sync
  * Requires PHP: 7.4
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BTS_VERSION', '1.0.0' );
+define( 'BTS_VERSION', '1.1.0' );
 define( 'BTS_FILE', __FILE__ );
 define( 'BTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'BTS_URL', plugin_dir_url( __FILE__ ) );
