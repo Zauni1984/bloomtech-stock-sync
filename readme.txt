@@ -72,12 +72,9 @@ die Artikelnummer als SKU eingetragen ist.
 Als doppelter Boden lässt sich in den Einstellungen ein SKU-Präfix angeben, das
 nie angefasst wird (Voreinstellung "HJ-").
 
-Zwei Sonderfälle deckt das Produkt selbst ab, unter *Produktdaten →
+Einen Sonderfall deckt das Produkt selbst ab, unter *Produktdaten →
 Lagerbestand*:
 
-* **Bloomtech-Artikelnummer** — nur ausfüllen, wenn die Nummer bei diesem einen
-  Produkt von der SKU abweicht. Dann zählt nur noch diese Nummer, die SKU des
-  Produkts wird nicht mehr verglichen. Normalfall: leer.
 * **Eigenbestand** — schließt ein Produkt dauerhaft aus, selbst wenn die SKU
   passt.
 

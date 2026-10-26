@@ -19,7 +19,6 @@ define( 'BTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'BTS_URL', plugin_dir_url( __FILE__ ) );
 
 /** Meta key holding the Bloomtech article number on a product or variation. */
-define( 'BTS_META_ARTNR', '_bloomtech_artnr' );
 
 spl_autoload_register(
 	static function ( $class ) {

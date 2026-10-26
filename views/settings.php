@@ -165,11 +165,8 @@
 	</td></tr>
 <tr><th scope="row">Einzelne Ausnahmen</th>
 	<td><p class="description" style="margin-top:6px">
-		Weicht bei einem Produkt die SKU von der Bloomtech-Nummer ab, lässt sich die Nummer im Produkt unter
-		<em>Produktdaten → Lagerbestand</em> im Feld <strong>Bloomtech-Artikelnummer</strong> hinterlegen.
-		Ist das Feld gefüllt, zählt nur noch diese Nummer, die SKU des Produkts wird dann nicht mehr verglichen.
-		Das ist die Ausnahme, nicht die Regel — normalerweise bleibt das Feld leer.
-		Das Häkchen <strong>Eigenbestand</strong> im selben Bereich schließt ein Produkt dauerhaft aus.
+		Das Häkchen <strong>Eigenbestand</strong> im Produkt unter <em>Produktdaten → Lagerbestand</em>
+		schließt ein Produkt dauerhaft aus, auch wenn die SKU passt.
 	</p></td></tr>
 </table>
 
