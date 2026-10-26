@@ -8,6 +8,9 @@ defined( 'ABSPATH' ) || exit;
  * article number in the SKU field (e.g. "16287"), while stock the shop owns
  * itself carries an auto-generated "HJ-…" SKU. A Bloomtech list therefore can
  * never match own stock — no manual linking required.
+ *
+ * The article number is the only thing ever compared. EAN/GTIN, product name,
+ * brand or price play no part in finding a product.
  */
 class BTS_Matcher {
 
@@ -27,6 +30,34 @@ class BTS_Matcher {
 		$map    = array();
 		$prefix = trim( (string) BTS_Settings::get( 'exclude_sku_prefix', 'HJ-' ) );
 
+		// Abweichende Artikelnummer direkt am Produkt hinterlegt. Ist sie gesetzt,
+		// zählt nur sie — die SKU dieses Produkts wird dann nicht mehr verglichen.
+		$overrides = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT pm.post_id, pm.meta_value AS artnr
+				 FROM {$wpdb->postmeta} pm
+				 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				 WHERE pm.meta_key = %s
+				   AND pm.meta_value <> ''
+				   AND p.post_type IN ('product','product_variation')
+				   AND p.post_status NOT IN ('trash','auto-draft')",
+				BTS_META_ARTNR
+			)
+		);
+		$overridden = array();
+		foreach ( $overrides as $r ) {
+			$artnr = trim( (string) $r->artnr );
+			if ( $artnr === '' ) {
+				continue;
+			}
+			$overridden[ (int) $r->post_id ] = true;
+			$map[ self::key( $artnr ) ][]    = array(
+				'pid' => (int) $r->post_id,
+				'via' => 'meta',
+				'sku' => $artnr,
+			);
+		}
+
 		$rows = $wpdb->get_results(
 			"SELECT pm.post_id, pm.meta_value AS sku
 			 FROM {$wpdb->postmeta} pm
@@ -38,7 +69,7 @@ class BTS_Matcher {
 		);
 		foreach ( $rows as $r ) {
 			$sku = trim( (string) $r->sku );
-			if ( $sku === '' ) {
+			if ( $sku === '' || isset( $overridden[ (int) $r->post_id ] ) ) {
 				continue;
 			}
 			if ( $prefix !== '' && stripos( $sku, $prefix ) === 0 ) {
@@ -48,26 +79,6 @@ class BTS_Matcher {
 				'pid' => (int) $r->post_id,
 				'via' => 'sku',
 				'sku' => $sku,
-			);
-		}
-
-		// Optionale Ausnahme: abweichende Artikelnummer direkt am Produkt hinterlegt.
-		$overrides = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT pm.post_id, pm.meta_value AS artnr
-				 FROM {$wpdb->postmeta} pm
-				 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-				 WHERE pm.meta_key = %s
-				   AND pm.meta_value <> ''
-				   AND p.post_status NOT IN ('trash','auto-draft')",
-				BTS_META_ARTNR
-			)
-		);
-		foreach ( $overrides as $r ) {
-			$map[ self::key( $r->artnr ) ][] = array(
-				'pid' => (int) $r->post_id,
-				'via' => 'meta',
-				'sku' => (string) $r->artnr,
 			);
 		}
 

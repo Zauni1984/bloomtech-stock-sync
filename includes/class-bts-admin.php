@@ -43,7 +43,7 @@ class BTS_Admin {
 				$out[ $k ] = sanitize_text_field( $in[ $k ] );
 			}
 		}
-		foreach ( array( 'remote_path', 'file_name', 'file_pattern', 'webdav_base', 'webdav_user', 'exclude_sku_prefix', 'col_artnr', 'col_ean', 'col_stock', 'col_name', 'col_brand', 'col_price' ) as $k ) {
+		foreach ( array( 'remote_path', 'file_name', 'file_pattern', 'webdav_base', 'webdav_user', 'exclude_sku_prefix', 'col_artnr', 'col_stock', 'col_name', 'col_brand', 'col_price' ) as $k ) {
 			if ( isset( $in[ $k ] ) ) {
 				$out[ $k ] = sanitize_text_field( $in[ $k ] );
 			}

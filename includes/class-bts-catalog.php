@@ -25,7 +25,6 @@ class BTS_Catalog {
 			}
 			$exists = (int) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$t} WHERE artnr = %s", $artnr ) );
 			$data   = array(
-				'ean'       => (string) ( $a['ean'] ?? '' ),
 				'name'      => mb_substr( (string) ( $a['name'] ?? '' ), 0, 255 ),
 				'brand'     => mb_substr( (string) ( $a['brand'] ?? '' ), 0, 191 ),
 				'stock'     => isset( $a['stock'] ) ? $a['stock'] : null,
@@ -70,9 +69,9 @@ class BTS_Catalog {
 		$where = array( '1=1' );
 		$args  = array();
 		if ( $search !== '' ) {
-			$where[] = '(artnr LIKE %s OR ean LIKE %s OR name LIKE %s OR brand LIKE %s)';
+			$where[] = '(artnr LIKE %s OR name LIKE %s OR brand LIKE %s)';
 			$like    = '%' . $wpdb->esc_like( $search ) . '%';
-			array_push( $args, $like, $like, $like, $like );
+			array_push( $args, $like, $like, $like );
 		}
 		if ( $filter === 'linked' || $filter === 'unlinked' ) {
 			if ( ! $linked ) {

@@ -150,7 +150,8 @@
 <p>Der Abgleich läuft über die <strong>SKU</strong>: Bloomtech-Ware trägt die Artikelnummer des Lieferanten
 	als SKU (z.&nbsp;B. <code>16287</code>), euer eigener Lagerbestand die <code>HJ-</code>-Nummern aus dem
 	Auto-SKU-Generator. Es ist <strong>keine manuelle Zuordnung nötig</strong> — passt die Artikelnummer auf eine
-	SKU, wird der Bestand gesetzt, sonst passiert nichts.</p>
+	SKU, wird der Bestand gesetzt, sonst passiert nichts. Verglichen wird <strong>ausschließlich</strong> die
+	Artikelnummer — nie EAN, Bezeichnung oder sonstige Angaben.</p>
 <table class="form-table" role="presentation">
 <tr><th scope="row">Eigenbestand ausschließen</th>
 	<td>SKUs, die so beginnen, nie anfassen:
@@ -166,6 +167,7 @@
 	<td><p class="description" style="margin-top:6px">
 		Weicht bei einem Produkt die SKU von der Bloomtech-Nummer ab, lässt sich die Nummer im Produkt unter
 		<em>Produktdaten → Lagerbestand</em> im Feld <strong>Bloomtech-Artikelnummer</strong> hinterlegen.
+		Ist das Feld gefüllt, zählt nur noch diese Nummer, die SKU des Produkts wird dann nicht mehr verglichen.
 		Das ist die Ausnahme, nicht die Regel — normalerweise bleibt das Feld leer.
 		Das Häkchen <strong>Eigenbestand</strong> im selben Bereich schließt ein Produkt dauerhaft aus.
 	</p></td></tr>
@@ -177,11 +179,11 @@
 	<td><label><input type="checkbox" name="has_header" value="1" <?php checked( $s['has_header'], 1 ); ?>> ja</label></td></tr>
 <tr><th scope="row">Artikelnummer <span style="color:#d63638">*</span></th>
 	<td><?php BTS_Admin::col_select( 'col_artnr', $s['col_artnr'], $header ); ?>
-		<p class="description">Das Feld, über das Produkte zugeordnet werden. Pflichtangabe.</p></td></tr>
+		<p class="description">Das einzige Feld, über das Produkte zugeordnet werden. Pflichtangabe.
+			EAN, Bezeichnung, Marke oder Preis werden <strong>nie</strong> zum Abgleich herangezogen.</p></td></tr>
 <tr><th scope="row">Bestand <span style="color:#d63638">*</span></th>
 	<td><?php BTS_Admin::col_select( 'col_stock', $s['col_stock'], $header ); ?>
 		<p class="description">Zahlen wie <code>12</code> oder <code>1.250</code> genauso wie Worte („lieferbar", „ausverkauft") werden verstanden.</p></td></tr>
-<tr><th scope="row">EAN / GTIN</th><td><?php BTS_Admin::col_select( 'col_ean', $s['col_ean'], $header ); ?></td></tr>
 <tr><th scope="row">Bezeichnung</th><td><?php BTS_Admin::col_select( 'col_name', $s['col_name'], $header ); ?></td></tr>
 <tr><th scope="row">Marke</th><td><?php BTS_Admin::col_select( 'col_brand', $s['col_brand'], $header ); ?></td></tr>
 <tr><th scope="row">Einkaufspreis</th><td><?php BTS_Admin::col_select( 'col_price', $s['col_price'], $header ); ?>

@@ -20,6 +20,8 @@ Zwei Grundregeln gelten immer:
    Lieferanten als SKU (z. B. "16287"), eigener Lagerbestand die "HJ-"-Nummern
    aus dem Auto-SKU-Generator — und "HJ-" steht in keiner Bloomtech-Liste.
    Eigenbestand wie Biobizz kann deshalb gar nicht getroffen werden.
+   Verglichen wird ausschließlich die Artikelnummer — nie EAN/GTIN,
+   Bezeichnung, Marke oder Preis. Eine EAN-Spalte in der Liste wird ignoriert.
 2. Geschrieben werden ausschließlich Bestandsmenge und Bestandsstatus.
    Preise, Texte, Status, Permalinks, Kategorien und Eigenschaften werden nie
    verändert.
@@ -74,7 +76,8 @@ Zwei Sonderfälle deckt das Produkt selbst ab, unter *Produktdaten →
 Lagerbestand*:
 
 * **Bloomtech-Artikelnummer** — nur ausfüllen, wenn die Nummer bei diesem einen
-  Produkt von der SKU abweicht. Normalfall: leer.
+  Produkt von der SKU abweicht. Dann zählt nur noch diese Nummer, die SKU des
+  Produkts wird nicht mehr verglichen. Normalfall: leer.
 * **Eigenbestand** — schließt ein Produkt dauerhaft aus, selbst wenn die SKU
   passt.
 

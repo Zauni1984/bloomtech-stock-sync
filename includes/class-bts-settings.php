@@ -29,7 +29,6 @@ class BTS_Settings {
 			'decimal'          => 'auto',
 			'has_header'       => 1,
 			'col_artnr'        => '',
-			'col_ean'          => '',
 			'col_stock'        => '',
 			'col_name'         => '',
 			'col_brand'        => '',

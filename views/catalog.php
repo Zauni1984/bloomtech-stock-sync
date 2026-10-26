@@ -11,7 +11,7 @@
 
 <form method="get" style="margin:14px 0">
 	<input type="hidden" name="page" value="bts-catalog">
-	<input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="Artikelnummer, EAN, Name oder Marke" class="regular-text">
+	<input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="Artikelnummer, Name oder Marke" class="regular-text">
 	<select name="filter">
 		<option value="all" <?php selected( $filter, 'all' ); ?>>Alle</option>
 		<option value="linked" <?php selected( $filter, 'linked' ); ?>>Nur mit Produkt im Shop</option>
@@ -24,7 +24,6 @@
 <table class="wp-list-table widefat fixed striped">
 <thead><tr>
 	<th style="width:150px">Artikelnummer</th>
-	<th style="width:130px">EAN</th>
 	<th>Bezeichnung</th>
 	<th style="width:120px">Marke</th>
 	<th style="width:80px">Bestand</th>
@@ -33,14 +32,13 @@
 </tr></thead>
 <tbody>
 <?php if ( ! $data['rows'] ) : ?>
-	<tr><td colspan="7">Noch keine Artikel im Katalog. Führe unter „Einstellungen" einmal <em>Verbindung testen</em>
+	<tr><td colspan="6">Noch keine Artikel im Katalog. Führe unter „Einstellungen" einmal <em>Verbindung testen</em>
 		und anschließend einen Abgleich aus — danach steht die Liste hier.</td></tr>
 <?php endif; ?>
 <?php foreach ( $data['rows'] as $r ) : ?>
 	<?php $links = $data['linked'][ $r->artnr ] ?? array(); ?>
 	<tr>
 		<td><code><?php echo esc_html( $r->artnr ); ?></code></td>
-		<td><?php echo esc_html( $r->ean ); ?></td>
 		<td><?php echo esc_html( $r->name ); ?></td>
 		<td><?php echo esc_html( $r->brand ); ?></td>
 		<td><?php echo $r->stock === null ? '—' : esc_html( rtrim( rtrim( number_format( (float) $r->stock, 3, ',', '.' ), '0' ), ',' ) ); ?></td>

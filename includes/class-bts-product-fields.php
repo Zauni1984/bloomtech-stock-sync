@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * This is the exception, not the rule: products are normally matched by their
  * SKU. The field only exists for the odd product whose shop SKU differs from
- * the Bloomtech article number. The "Eigenbestand" checkbox is the hard opt-out
+ * the Bloomtech article number; when filled, it replaces the SKU for matching. The "Eigenbestand" checkbox is the hard opt-out
  * that wins over any match.
  */
 class BTS_Product_Fields {
@@ -29,7 +29,7 @@ class BTS_Product_Fields {
 				'id'          => BTS_META_ARTNR,
 				'label'       => 'Bloomtech-Artikelnummer',
 				'desc_tip'    => true,
-				'description' => 'Nur ausfüllen, wenn die Bloomtech-Nummer von der SKU abweicht. Im Normalfall leer lassen — der Abgleich läuft über die SKU.',
+				'description' => 'Nur ausfüllen, wenn die Bloomtech-Nummer von der SKU abweicht. Dann zählt nur diese Nummer, nicht mehr die SKU. Im Normalfall leer lassen — der Abgleich läuft über die SKU.',
 				'value'       => get_post_meta( $post->ID, BTS_META_ARTNR, true ),
 			)
 		);

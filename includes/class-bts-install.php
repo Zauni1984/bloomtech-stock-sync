@@ -46,7 +46,6 @@ class BTS_Install {
 			"CREATE TABLE {$a} (
 				id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 				artnr VARCHAR(191) NOT NULL,
-				ean VARCHAR(64) NOT NULL DEFAULT '',
 				name VARCHAR(255) NOT NULL DEFAULT '',
 				brand VARCHAR(191) NOT NULL DEFAULT '',
 				stock DECIMAL(14,3) DEFAULT NULL,
@@ -56,7 +55,6 @@ class BTS_Install {
 				last_seen DATETIME NULL,
 				PRIMARY KEY  (id),
 				UNIQUE KEY artnr (artnr),
-				KEY ean (ean),
 				KEY last_seen (last_seen)
 			) {$charset};"
 		);

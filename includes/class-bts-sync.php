@@ -5,9 +5,11 @@ defined( 'ABSPATH' ) || exit;
  * The actual stock run.
  *
  * Two rules govern everything here:
- *   1. Only products that carry a Bloomtech article number are touched. Products
- *      stocked by the shop itself (Biobizz and friends) simply have no article
- *      number and are therefore invisible to this plugin.
+ *   1. Only products that carry a Bloomtech article number are touched, and the
+ *      article number is the only thing ever compared. EAN, name, brand or price
+ *      never decide which product a line belongs to. Products stocked by the
+ *      shop itself (Biobizz and friends) simply have no article number and are
+ *      therefore invisible to this plugin.
  *   2. Only stock quantity and stock status are ever written. Price, texts,
  *      status, slug, categories and attributes are never modified.
  */
@@ -101,7 +103,6 @@ class BTS_Sync {
 			}
 			$articles[ $artnr ] = array(
 				'artnr' => $artnr,
-				'ean'   => $idx['ean'] !== null ? self::cell( $row, $idx['ean'] ) : '',
 				'name'  => $idx['name'] !== null ? self::cell( $row, $idx['name'] ) : '',
 				'brand' => $idx['brand'] !== null ? self::cell( $row, $idx['brand'] ) : '',
 				'stock' => $stock,
@@ -361,7 +362,7 @@ class BTS_Sync {
 			$norm[ self::normalise( $h ) ] = $i;
 		}
 		$out = array();
-		foreach ( array( 'artnr', 'ean', 'stock', 'name', 'brand', 'price' ) as $key ) {
+		foreach ( array( 'artnr', 'stock', 'name', 'brand', 'price' ) as $key ) {
 			$want          = self::normalise( (string) BTS_Settings::get( 'col_' . $key, '' ) );
 			$out[ $key ] = ( $want !== '' && isset( $norm[ $want ] ) ) ? $norm[ $want ] : null;
 		}
